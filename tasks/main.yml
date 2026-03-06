@@ -1,0 +1,26 @@
+---
+- name: Update apt cache (Debian/Ubuntu)
+  ansible.builtin.apt:
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install required packages
+  ansible.builtin.package:
+    name:
+      - git
+      - nginx
+    state: present
+
+- name: Clone VK lighthouse repository
+  ansible.builtin.git:
+    repo: "{{ lighthouse_git_repo }}"
+    dest: "{{ lighthouse_dir }}"
+    version: "{{ lighthouse_branch }}"
+    force: true
+  notify: Start nginx
+
+- name: Ensure nginx is running
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: true
+    state: started
